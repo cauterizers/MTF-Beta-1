@@ -33,7 +33,6 @@
             min-height: 100vh;
         }
 
-        /* CRT Scanline Effect (Applied Globally) */
         body::before {
             content: " ";
             display: block;
@@ -45,9 +44,6 @@
             pointer-events: none;
         }
 
-        /* ==========================================
-           BOOT SCREEN STYLES
-           ========================================== */
         #boot-screen {
             position: fixed;
             top: 0;
@@ -110,9 +106,6 @@
             box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
         }
 
-        /* ==========================================
-           MAIN INTERFACE STYLES
-           ========================================== */
         #main-interface {
             opacity: 0;
             visibility: hidden;
@@ -120,7 +113,6 @@
             padding-bottom: 40px;
         }
 
-        /* Class added via JS to trigger the fade-in */
         #main-interface.revealed {
             opacity: 1;
             visibility: visible;
@@ -312,7 +304,10 @@
     </style>
 </head>
 <body>
+
     <audio id="ambient-loop" src="freesound_community-computer-fan-ambience-72053.mp3" loop></audio>
+    <audio id="power-on" src="u_2ab2u63z6t-am-level-up-02-518138.mp3"></audio>
+
     <div id="boot-screen">
         <div class="boot-wrapper">
             <div class="terminal-log" id="log"></div>
@@ -416,38 +411,48 @@
             printLog();
         });
 
-       function initializeSystem() {
-    const elem = document.documentElement;
-    
-    // Go Fullscreen across modern browsers
-    if (elem.requestFullscreen) {
-        elem.requestFullscreen().catch(err => console.log("Fullscreen blocked or bypassed"));
-    } else if (elem.webkitRequestFullscreen) { 
-        elem.webkitRequestFullscreen();
-    } else if (elem.msRequestFullscreen) { 
-        elem.msRequestFullscreen();
-    }
+        function initializeSystem() {
+            // STEP 1: FIRE AUDIO IMMEDIATELY ON CLICK CONTEXT
+            const powerOnAudio = document.getElementById('power-on');
+            if (powerOnAudio) {
+                powerOnAudio.volume = 0.6; 
+                powerOnAudio.play().catch(error => {
+                    console.error("Power-on playback failed directly:", error);
+                });
+            }
 
-    const ambientAudio = document.getElementById('ambient-loop');
-    if (ambientAudio) {
-        ambientAudio.volume = 0.4; 
-        ambientAudio.play().catch(error => console.log("Ambient audio blocked:", error));
-    }
+            const ambientAudio = document.getElementById('ambient-loop');
+            if (ambientAudio) {
+                ambientAudio.volume = 0.3; 
+                ambientAudio.play().catch(error => {
+                    console.error("Ambient loop playback failed directly:", error);
+                });
+            }
 
-    // Smooth UI Transition Elements
-    const bootScreen = document.getElementById('boot-screen');
-    const mainInterface = document.getElementById('main-interface');
+            // STEP 2: FULLSCREEN EXPANSION SECONDARY
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(err => console.log("Fullscreen request deferred."));
+            } else if (elem.webkitRequestFullscreen) { 
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { 
+                elem.msRequestFullscreen();
+            }
 
-    if (bootScreen && mainInterface) {
-        bootScreen.style.opacity = '0';
-        bootScreen.style.transform = 'translateY(-30px)';
+            // STEP 3: SMOOTH SEAMLESS TRANSITION FADE
+            const bootScreen = document.getElementById('boot-screen');
+            const mainInterface = document.getElementById('main-interface');
 
-        setTimeout(() => {
-            bootScreen.style.display = 'none';
-            mainInterface.classList.add('revealed');
-        }, 600);
-    }
-}
+            if (bootScreen && mainInterface) {
+                bootScreen.style.opacity = '0';
+                bootScreen.style.transform = 'translateY(-30px)';
+
+                setTimeout(() => {
+                    bootScreen.style.display = 'none';
+                    mainInterface.classList.add('revealed');
+                }, 600);
+            }
+        }
     </script>
 </body>
 </html>
